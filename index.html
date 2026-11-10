@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Operaciones - EJESA</title>
     
-    <!-- Carga de Tailwind CSS sin instalar nada -->
+    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Carga de Supabase -->
@@ -24,7 +24,7 @@
 <body class="bg-neutral-800 min-h-screen p-8 font-sans">
 
     <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-8 border-b-2 border-blue-900 pb-4">
+    <div class="flex justify-between items-center mb-10 border-b-2 border-blue-900 pb-4">
         <div class="text-white text-3xl font-bold tracking-wider">
             <span class="text-cyan-400">EJESA</span> | SISTEMA DE OPERACIONES
         </div>
@@ -32,37 +32,57 @@
 
     <!-- Contenedor del Mapa -->
     <div class="flex flex-col gap-10">
+        
+        <!-- Aquí es donde cambiamos las columnas para que coincidan con la forma -->
         <div class="flex flex-wrap justify-between gap-8">
-            <!-- Sector A -->
-            <div id="sectorA" class="grid grid-cols-6 gap-1 w-fit"></div>
-            <!-- Sector B -->
-            <div id="sectorB" class="grid grid-cols-6 gap-1 w-fit"></div>
-            <!-- Sector C -->
-            <div id="sectorC" class="grid grid-cols-6 gap-1 w-fit"></div>
+            <!-- Sector A (9 columnas de ancho) -->
+            <div id="sectorA" class="grid grid-cols-9 gap-1 w-fit"></div>
+            <!-- Sector B (8 columnas de ancho) -->
+            <div id="sectorB" class="grid grid-cols-8 gap-1 w-fit"></div>
+            <!-- Sector C (11 columnas de ancho) -->
+            <div id="sectorC" class="grid grid-cols-11 gap-1 w-fit"></div>
         </div>
 
         <!-- Seccionadores Inferiores -->
         <div id="seccionadores" class="flex justify-center gap-4 mt-8"></div>
     </div>
 
-    <!-- Script de lógica pura (Vanilla JS) -->
+    <!-- Script de lógica y mapeo -->
     <script>
-        // Función para generar los nombres de los bloques (Ej: A01 a A35)
-        function generarBloques(letra, inicio, fin) {
-            let bloques = [];
-            for (let i = inicio; i <= fin; i++) {
-                let numero = i < 10 ? '0' + i : i;
-                bloques.push(letra + numero);
-            }
-            return bloques;
-        }
+        // Mapeo exacto Sector A respetando los espacios vacíos (null)
+        const mapaA = [
+            null, null, null, null, null, null, null, 'A01', null,
+            'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', null,
+            null, 'A10', 'A11', 'A12', 'A13', 'A14', 'A15', 'A16', 'A17',
+            null, null, 'A18', 'A19', 'A20', 'A21', 'A22', 'A23', 'A24',
+            null, null, null, 'A25', 'A26', 'A27', 'A28', 'A29', 'A30',
+            null, null, null, null, 'A31', 'A32', 'A33', 'A34', 'A35'
+        ];
 
-        const sectorA = generarBloques('A', 1, 35);
-        const sectorB = generarBloques('B', 1, 35);
-        const sectorC = generarBloques('C', 1, 35);
+        // Mapeo exacto Sector B
+        const mapaB = [
+            null, null, 'B01', 'B02', 'B03', 'B04', 'B05', null,
+            null, 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12',
+            'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20',
+            'B21', 'B22', 'B23', 'B24', 'B25', 'B26', 'B27', 'B28',
+            'B29', 'B30', 'B31', 'B32', 'B33', 'B34', 'B35', null
+        ];
+
+        // Mapeo exacto Sector C (con el desfasaje de los equipos C25-C35 a la derecha)
+        const mapaC = [
+            'C01', 'C02', 'C03', 'C04', 'C05', 'C06', null, null, null, null, null,
+            'C07', 'C08', 'C09', 'C10', 'C11', 'C12', null, null, null, null, null,
+            'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', null, null, null, null,
+            null, 'C20', 'C21', 'C22', 'C23', 'C24', null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, 'C25', 'C26',
+            null, null, null, null, null, null, 'C27', 'C28', 'C29', 'C30', 'C31',
+            null, null, null, null, null, null, null, 'C32', 'C33', 'C34', 'C35'
+        ];
+
+        // Seccionadores
         const seccionadores = ['DA1a', 'DA1b', 'DA2', 'DA3', 'DB1', 'DB2', 'DB3', 'DC1', 'DC2', 'DC3'];
 
-        // Simulación de datos que luego vendrán de Supabase
+        // Simulación de estados para probar los colores
         const estadoEquipos = {
             'B34': 'estado-rojo',
             'A05': 'estado-verde',
@@ -71,33 +91,39 @@
             'B02': 'estado-amarillo'
         };
 
-        // Función para crear cada botón del mapa
-        function renderizarSector(listaEquipos, contenedorId) {
+        // Función para renderizar inyectando divs vacíos donde dice 'null'
+        function renderizarMapa(mapa, contenedorId) {
             const contenedor = document.getElementById(contenedorId);
             
-            listaEquipos.forEach(equipo => {
-                const btn = document.createElement('button');
-                // Si el equipo tiene un estado en la BD, lo usa; si no, queda blanco
-                const claseEstado = estadoEquipos[equipo] || 'estado-blanco';
-                
-                btn.className = `w-12 h-10 flex items-center justify-center font-bold text-sm border-2 cursor-pointer transition-all hover:opacity-80 shadow-sm ${claseEstado}`;
-                btn.innerText = equipo;
-                
-                // Evento de doble clic
-                btn.ondblclick = () => {
-                    alert('Abriendo ventana de carga para: ' + equipo);
-                    // Aquí llamaremos a la ventana flotante
-                };
+            mapa.forEach(equipo => {
+                if (equipo === null) {
+                    // Crea un espacio transparente del mismo tamaño que un botón
+                    const espacioVacio = document.createElement('div');
+                    espacioVacio.className = 'w-12 h-10'; 
+                    contenedor.appendChild(espacioVacio);
+                } else {
+                    // Crea el botón real
+                    const btn = document.createElement('button');
+                    const claseEstado = estadoEquipos[equipo] || 'estado-blanco';
+                    
+                    btn.className = `w-12 h-10 flex items-center justify-center font-bold text-sm border-2 cursor-pointer transition-all hover:opacity-80 shadow-sm ${claseEstado}`;
+                    btn.innerText = equipo;
+                    
+                    // Evento de doble clic
+                    btn.ondblclick = () => {
+                        alert('Abriendo formulario de carga para la CT: ' + equipo);
+                    };
 
-                contenedor.appendChild(btn);
+                    contenedor.appendChild(btn);
+                }
             });
         }
 
-        // Ejecutar el renderizado al cargar la página
-        renderizarSector(sectorA, 'sectorA');
-        renderizarSector(sectorB, 'sectorB');
-        renderizarSector(sectorC, 'sectorC');
-        renderizarSector(seccionadores, 'seccionadores');
+        // Ejecutar
+        renderizarMapa(mapaA, 'sectorA');
+        renderizarMapa(mapaB, 'sectorB');
+        renderizarMapa(mapaC, 'sectorC');
+        renderizarMapa(seccionadores, 'seccionadores');
     </script>
 </body>
 </html>
