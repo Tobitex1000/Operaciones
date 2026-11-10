@@ -10,159 +10,60 @@
     
     <!-- Carga de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        /* Clases de colores dinámicos */
-        .estado-blanco { background-color: #ffffff; color: #000000; border-color: #d1d5db; }
-        .estado-verde { background-color: #22c55e; color: #ffffff; border-color: #15803d; }
-        .estado-amarillo { background-color: #facc15; color: #000000; border-color: #ca8a04; }
-        .estado-negro { background-color: #000000; color: #ffffff; border-color: #6b7280; }
-        .estado-rojo { background-color: #dc2626; color: #ffffff; border-color: #991b1b; }
-        .estado-azul { background-color: #2563eb; color: #ffffff; border-color: #1e40af; }
-    </style>
 </head>
-<body class="bg-neutral-800 min-h-screen p-4 md:p-8 font-sans">
+<!-- Fondo azul oscuro con degradado radial y texto claro -->
+<body class="bg-slate-900 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(30,58,138,0.7),rgba(15,23,42,1))] min-h-screen p-4 md:p-8 font-sans text-slate-200 selection:bg-cyan-500 selection:text-white">
 
-    <!-- Encabezado -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b-2 border-blue-900 pb-4">
-        <div class="text-white text-2xl md:text-3xl font-bold tracking-wider text-center md:text-left">
-            <span class="text-cyan-400">EJESA</span> | SISTEMA DE OPERACIONES
+    <!-- Encabezado Moderno -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-blue-800/50 pb-5">
+        <div class="text-3xl md:text-4xl font-extrabold tracking-widest text-center md:text-left drop-shadow-lg">
+            <!-- Texto EJESA con degradado brillante -->
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500">EJESA</span> 
+            <span class="text-gray-400 font-light">|</span> 
+            <span class="text-gray-100">SISTEMA DE OPERACIONES</span>
         </div>
     </div>
 
-    <!-- Pestañas de Selección de Parque -->
-    <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
-        <button id="btn-sectorA" onclick="mostrarSector('sectorA')" class="px-4 py-2 font-bold text-sm md:text-base bg-blue-600 text-white border-2 border-blue-400 rounded hover:bg-blue-500 transition-colors">
+    <!-- Pestañas de Selección de Parque (Estilo Glassmorphism) -->
+    <div class="flex flex-wrap justify-center gap-3 md:gap-5 mb-10">
+        <button id="btn-sectorA" onclick="mostrarSector('sectorA')" class="tab-btn px-6 py-2.5 font-bold text-sm md:text-base rounded-full transition-all duration-300 border backdrop-blur-md">
             CAUCHARI 1 (A)
         </button>
-        <button id="btn-sectorB" onclick="mostrarSector('sectorB')" class="px-4 py-2 font-bold text-sm md:text-base bg-gray-600 text-white border-2 border-gray-500 rounded hover:bg-blue-500 transition-colors">
+        <button id="btn-sectorB" onclick="mostrarSector('sectorB')" class="tab-btn px-6 py-2.5 font-bold text-sm md:text-base rounded-full transition-all duration-300 border backdrop-blur-md">
             CAUCHARI 2 (B)
         </button>
-        <button id="btn-sectorC" onclick="mostrarSector('sectorC')" class="px-4 py-2 font-bold text-sm md:text-base bg-gray-600 text-white border-2 border-gray-500 rounded hover:bg-blue-500 transition-colors">
+        <button id="btn-sectorC" onclick="mostrarSector('sectorC')" class="tab-btn px-6 py-2.5 font-bold text-sm md:text-base rounded-full transition-all duration-300 border backdrop-blur-md">
             CAUCHARI 3 (C)
         </button>
     </div>
 
     <!-- Contenedor del Mapa Activo -->
-    <div class="flex justify-center mb-10 overflow-x-auto pb-4">
+    <div class="flex justify-center mb-12 overflow-x-auto pb-6">
         <!-- Sector A (Activo por defecto) -->
-        <div id="sectorA" class="grid grid-cols-9 gap-1 w-fit"></div>
+        <div id="sectorA" class="grid grid-cols-9 gap-2 md:gap-3 w-fit"></div>
         
         <!-- Sector B (Oculto por defecto) -->
-        <div id="sectorB" class="grid grid-cols-8 gap-1 w-fit hidden"></div>
+        <div id="sectorB" class="grid grid-cols-8 gap-2 md:gap-3 w-fit hidden"></div>
         
         <!-- Sector C (Oculto por defecto) -->
-        <div id="sectorC" class="grid grid-cols-11 gap-1 w-fit hidden"></div>
+        <div id="sectorC" class="grid grid-cols-11 gap-2 md:gap-3 w-fit hidden"></div>
     </div>
 
-    <!-- Seccionadores Inferiores (Siempre visibles) -->
-    <div class="border-t border-gray-600 pt-6">
-        <div class="text-center text-gray-400 font-bold text-sm mb-4">SECCIONADORES PRINCIPALES</div>
-        <div id="seccionadores" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
+    <!-- Seccionadores Inferiores -->
+    <div class="border-t border-blue-900/50 pt-8 mt-4">
+        <div class="text-center text-cyan-500/80 tracking-[0.2em] font-bold text-xs md:text-sm mb-6 uppercase drop-shadow-md">
+            Seccionadores Principales
+        </div>
+        <div id="seccionadores" class="flex flex-wrap justify-center gap-3 md:gap-4"></div>
     </div>
 
     <!-- Script de lógica y mapeo -->
     <script>
-        // Función para cambiar entre mapas
-        function mostrarSector(sectorId) {
-            // 1. Ocultar todos los mapas
-            document.getElementById('sectorA').classList.add('hidden');
-            document.getElementById('sectorB').classList.add('hidden');
-            document.getElementById('sectorC').classList.add('hidden');
-            
-            // 2. Mostrar el mapa seleccionado
-            document.getElementById(sectorId).classList.remove('hidden');
-
-            // 3. Reiniciar colores de todos los botones a gris
-            const botones = ['btn-sectorA', 'btn-sectorB', 'btn-sectorC'];
-            botones.forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                btn.classList.remove('bg-blue-600', 'border-blue-400');
-                btn.classList.add('bg-gray-600', 'border-gray-500');
-            });
-
-            // 4. Pintar de azul el botón activo
-            const btnActivo = document.getElementById('btn-' + sectorId);
-            btnActivo.classList.remove('bg-gray-600', 'border-gray-500');
-            btnActivo.classList.add('bg-blue-600', 'border-blue-400');
-        }
-
-        // Mapeo exacto Sector A respetando los espacios vacíos (null)
-        const mapaA = [
-            null, null, null, null, null, null, null, 'A01', null,
-            'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', null,
-            null, 'A10', 'A11', 'A12', 'A13', 'A14', 'A15', 'A16', 'A17',
-            null, null, 'A18', 'A19', 'A20', 'A21', 'A22', 'A23', 'A24',
-            null, null, null, 'A25', 'A26', 'A27', 'A28', 'A29', 'A30',
-            null, null, null, null, 'A31', 'A32', 'A33', 'A34', 'A35'
-        ];
-
-        // Mapeo exacto Sector B
-        const mapaB = [
-            null, null, 'B01', 'B02', 'B03', 'B04', 'B05', null,
-            null, 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12',
-            'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20',
-            'B21', 'B22', 'B23', 'B24', 'B25', 'B26', 'B27', 'B28',
-            'B29', 'B30', 'B31', 'B32', 'B33', 'B34', 'B35', null
-        ];
-
-        // Mapeo exacto Sector C
-        const mapaC = [
-            'C01', 'C02', 'C03', 'C04', 'C05', 'C06', null, null, null, null, null,
-            'C07', 'C08', 'C09', 'C10', 'C11', 'C12', null, null, null, null, null,
-            'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', null, null, null, null,
-            null, 'C20', 'C21', 'C22', 'C23', 'C24', null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, 'C25', 'C26',
-            null, null, null, null, null, null, 'C27', 'C28', 'C29', 'C30', 'C31',
-            null, null, null, null, null, null, null, 'C32', 'C33', 'C34', 'C35'
-        ];
-
-        // Seccionadores
-        const seccionadores = ['DA1a', 'DA1b', 'DA2', 'DA3', 'DB1', 'DB2', 'DB3', 'DC1', 'DC2', 'DC3'];
-
-        // Simulación de estados para probar los colores
-        const estadoEquipos = {
-            'B34': 'estado-rojo',
-            'A05': 'estado-verde',
-            'C12': 'estado-azul',
-            'A10': 'estado-negro',
-            'B02': 'estado-amarillo'
-        };
-
-        // Función para renderizar inyectando divs vacíos donde dice 'null'
-        function renderizarMapa(mapa, contenedorId) {
-            const contenedor = document.getElementById(contenedorId);
-            
-            mapa.forEach(equipo => {
-                if (equipo === null) {
-                    // Crea un espacio transparente del mismo tamaño que un botón
-                    const espacioVacio = document.createElement('div');
-                    espacioVacio.className = 'w-10 h-10 md:w-12 md:h-10'; 
-                    contenedor.appendChild(espacioVacio);
-                } else {
-                    // Crea el botón real
-                    const btn = document.createElement('button');
-                    const claseEstado = estadoEquipos[equipo] || 'estado-blanco';
-                    
-                    // Ajuste de tamaño para móviles (w-10) y escritorio (md:w-12)
-                    btn.className = `w-10 h-10 md:w-12 md:h-10 flex items-center justify-center font-bold text-xs md:text-sm border-2 cursor-pointer transition-all hover:opacity-80 shadow-sm ${claseEstado}`;
-                    btn.innerText = equipo;
-                    
-                    // Evento de doble clic
-                    btn.ondblclick = () => {
-                        alert('Abriendo formulario de carga para la CT: ' + equipo);
-                    };
-
-                    contenedor.appendChild(btn);
-                }
-            });
-        }
-
-        // Ejecutar renderizado al cargar la página
-        renderizarMapa(mapaA, 'sectorA');
-        renderizarMapa(mapaB, 'sectorB');
-        renderizarMapa(mapaC, 'sectorC');
-        renderizarMapa(seccionadores, 'seccionadores');
-    </script>
-</body>
-</html>
+        // --- CONFIGURACIÓN DE ESTILOS MODERNOS (Tailwind Classes) ---
+        
+        // Clases base para TODOS los botones de equipos (tamaño, sombras, animaciones)
+        const claseBaseBoton = "w-11 h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center font-extrabold text-xs md:text-sm border border-opacity-60 cursor-pointer transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:z-10";
+        
+        // Diccionario de colores con degradados, brillos (glow) y opacidades
+        const estilosEstados = {
+            'blanco': 'bg-gradient-to-br from-slate-200 to
