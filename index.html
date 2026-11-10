@@ -21,34 +21,72 @@
         .estado-azul { background-color: #2563eb; color: #ffffff; border-color: #1e40af; }
     </style>
 </head>
-<body class="bg-neutral-800 min-h-screen p-8 font-sans">
+<body class="bg-neutral-800 min-h-screen p-4 md:p-8 font-sans">
 
     <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-10 border-b-2 border-blue-900 pb-4">
-        <div class="text-white text-3xl font-bold tracking-wider">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b-2 border-blue-900 pb-4">
+        <div class="text-white text-2xl md:text-3xl font-bold tracking-wider text-center md:text-left">
             <span class="text-cyan-400">EJESA</span> | SISTEMA DE OPERACIONES
         </div>
     </div>
 
-    <!-- Contenedor del Mapa -->
-    <div class="flex flex-col gap-10">
-        
-        <!-- Aquí es donde cambiamos las columnas para que coincidan con la forma -->
-        <div class="flex flex-wrap justify-between gap-8">
-            <!-- Sector A (9 columnas de ancho) -->
-            <div id="sectorA" class="grid grid-cols-9 gap-1 w-fit"></div>
-            <!-- Sector B (8 columnas de ancho) -->
-            <div id="sectorB" class="grid grid-cols-8 gap-1 w-fit"></div>
-            <!-- Sector C (11 columnas de ancho) -->
-            <div id="sectorC" class="grid grid-cols-11 gap-1 w-fit"></div>
-        </div>
+    <!-- Pestañas de Selección de Parque -->
+    <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+        <button id="btn-sectorA" onclick="mostrarSector('sectorA')" class="px-4 py-2 font-bold text-sm md:text-base bg-blue-600 text-white border-2 border-blue-400 rounded hover:bg-blue-500 transition-colors">
+            CAUCHARI 1 (A)
+        </button>
+        <button id="btn-sectorB" onclick="mostrarSector('sectorB')" class="px-4 py-2 font-bold text-sm md:text-base bg-gray-600 text-white border-2 border-gray-500 rounded hover:bg-blue-500 transition-colors">
+            CAUCHARI 2 (B)
+        </button>
+        <button id="btn-sectorC" onclick="mostrarSector('sectorC')" class="px-4 py-2 font-bold text-sm md:text-base bg-gray-600 text-white border-2 border-gray-500 rounded hover:bg-blue-500 transition-colors">
+            CAUCHARI 3 (C)
+        </button>
+    </div>
 
-        <!-- Seccionadores Inferiores -->
-        <div id="seccionadores" class="flex justify-center gap-4 mt-8"></div>
+    <!-- Contenedor del Mapa Activo -->
+    <div class="flex justify-center mb-10 overflow-x-auto pb-4">
+        <!-- Sector A (Activo por defecto) -->
+        <div id="sectorA" class="grid grid-cols-9 gap-1 w-fit"></div>
+        
+        <!-- Sector B (Oculto por defecto) -->
+        <div id="sectorB" class="grid grid-cols-8 gap-1 w-fit hidden"></div>
+        
+        <!-- Sector C (Oculto por defecto) -->
+        <div id="sectorC" class="grid grid-cols-11 gap-1 w-fit hidden"></div>
+    </div>
+
+    <!-- Seccionadores Inferiores (Siempre visibles) -->
+    <div class="border-t border-gray-600 pt-6">
+        <div class="text-center text-gray-400 font-bold text-sm mb-4">SECCIONADORES PRINCIPALES</div>
+        <div id="seccionadores" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
     </div>
 
     <!-- Script de lógica y mapeo -->
     <script>
+        // Función para cambiar entre mapas
+        function mostrarSector(sectorId) {
+            // 1. Ocultar todos los mapas
+            document.getElementById('sectorA').classList.add('hidden');
+            document.getElementById('sectorB').classList.add('hidden');
+            document.getElementById('sectorC').classList.add('hidden');
+            
+            // 2. Mostrar el mapa seleccionado
+            document.getElementById(sectorId).classList.remove('hidden');
+
+            // 3. Reiniciar colores de todos los botones a gris
+            const botones = ['btn-sectorA', 'btn-sectorB', 'btn-sectorC'];
+            botones.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                btn.classList.remove('bg-blue-600', 'border-blue-400');
+                btn.classList.add('bg-gray-600', 'border-gray-500');
+            });
+
+            // 4. Pintar de azul el botón activo
+            const btnActivo = document.getElementById('btn-' + sectorId);
+            btnActivo.classList.remove('bg-gray-600', 'border-gray-500');
+            btnActivo.classList.add('bg-blue-600', 'border-blue-400');
+        }
+
         // Mapeo exacto Sector A respetando los espacios vacíos (null)
         const mapaA = [
             null, null, null, null, null, null, null, 'A01', null,
@@ -68,7 +106,7 @@
             'B29', 'B30', 'B31', 'B32', 'B33', 'B34', 'B35', null
         ];
 
-        // Mapeo exacto Sector C (con el desfasaje de los equipos C25-C35 a la derecha)
+        // Mapeo exacto Sector C
         const mapaC = [
             'C01', 'C02', 'C03', 'C04', 'C05', 'C06', null, null, null, null, null,
             'C07', 'C08', 'C09', 'C10', 'C11', 'C12', null, null, null, null, null,
@@ -99,14 +137,15 @@
                 if (equipo === null) {
                     // Crea un espacio transparente del mismo tamaño que un botón
                     const espacioVacio = document.createElement('div');
-                    espacioVacio.className = 'w-12 h-10'; 
+                    espacioVacio.className = 'w-10 h-10 md:w-12 md:h-10'; 
                     contenedor.appendChild(espacioVacio);
                 } else {
                     // Crea el botón real
                     const btn = document.createElement('button');
                     const claseEstado = estadoEquipos[equipo] || 'estado-blanco';
                     
-                    btn.className = `w-12 h-10 flex items-center justify-center font-bold text-sm border-2 cursor-pointer transition-all hover:opacity-80 shadow-sm ${claseEstado}`;
+                    // Ajuste de tamaño para móviles (w-10) y escritorio (md:w-12)
+                    btn.className = `w-10 h-10 md:w-12 md:h-10 flex items-center justify-center font-bold text-xs md:text-sm border-2 cursor-pointer transition-all hover:opacity-80 shadow-sm ${claseEstado}`;
                     btn.innerText = equipo;
                     
                     // Evento de doble clic
@@ -119,7 +158,7 @@
             });
         }
 
-        // Ejecutar
+        // Ejecutar renderizado al cargar la página
         renderizarMapa(mapaA, 'sectorA');
         renderizarMapa(mapaB, 'sectorB');
         renderizarMapa(mapaC, 'sectorC');
