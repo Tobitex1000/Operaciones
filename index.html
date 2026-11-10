@@ -66,4 +66,118 @@
         
         // Diccionario de colores con degradados, brillos (glow) y opacidades
         const estilosEstados = {
-            'blanco': 'bg-gradient-to-br from-slate-200 to
+            'blanco': 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 border-slate-300 shadow-lg',
+            'verde': 'bg-gradient-to-br from-green-400 to-emerald-600 text-white border-green-300 shadow-[0_0_15px_rgba(52,211,153,0.6)]',
+            'amarillo': 'bg-gradient-to-br from-yellow-300 to-amber-500 text-slate-900 border-yellow-200 shadow-[0_0_15px_rgba(252,211,77,0.6)]',
+            'negro': 'bg-gradient-to-br from-slate-700 to-slate-900 text-white border-slate-600 shadow-lg',
+            'rojo': 'bg-gradient-to-br from-red-500 to-rose-700 text-white border-red-400 shadow-[0_0_20px_rgba(244,63,94,0.8)]', // Glow más fuerte
+            'azul': 'bg-gradient-to-br from-blue-400 to-indigo-600 text-white border-blue-300 shadow-[0_0_15px_rgba(96,165,250,0.6)]'
+        };
+
+        // Clases para las pestañas
+        const tabActiva = ['bg-gradient-to-r', 'from-cyan-500', 'to-blue-600', 'text-white', 'border-cyan-400', 'shadow-[0_0_15px_rgba(6,182,212,0.5)]', 'scale-105'];
+        const tabInactiva = ['bg-white/10', 'text-gray-400', 'border-white/10', 'hover:bg-white/20', 'hover:text-white'];
+
+        // --- LÓGICA DE INTERFAZ ---
+
+        function mostrarSector(sectorId) {
+            // Ocultar todos
+            document.getElementById('sectorA').classList.add('hidden');
+            document.getElementById('sectorB').classList.add('hidden');
+            document.getElementById('sectorC').classList.add('hidden');
+            
+            // Mostrar seleccionado
+            document.getElementById(sectorId).classList.remove('hidden');
+
+            // Resetear botones a inactivos
+            const botones = ['btn-sectorA', 'btn-sectorB', 'btn-sectorC'];
+            botones.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                btn.classList.remove(...tabActiva);
+                btn.classList.add(...tabInactiva);
+            });
+
+            // Activar botón seleccionado
+            const btnActivo = document.getElementById('btn-' + sectorId);
+            btnActivo.classList.remove(...tabInactiva);
+            btnActivo.classList.add(...tabActiva);
+        }
+
+        // Mapas Exactos (Siluetas)
+        const mapaA = [
+            null, null, null, null, null, null, null, 'A01', null,
+            'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', null,
+            null, 'A10', 'A11', 'A12', 'A13', 'A14', 'A15', 'A16', 'A17',
+            null, null, 'A18', 'A19', 'A20', 'A21', 'A22', 'A23', 'A24',
+            null, null, null, 'A25', 'A26', 'A27', 'A28', 'A29', 'A30',
+            null, null, null, null, 'A31', 'A32', 'A33', 'A34', 'A35'
+        ];
+
+        const mapaB = [
+            null, null, 'B01', 'B02', 'B03', 'B04', 'B05', null,
+            null, 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12',
+            'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20',
+            'B21', 'B22', 'B23', 'B24', 'B25', 'B26', 'B27', 'B28',
+            'B29', 'B30', 'B31', 'B32', 'B33', 'B34', 'B35', null
+        ];
+
+        const mapaC = [
+            'C01', 'C02', 'C03', 'C04', 'C05', 'C06', null, null, null, null, null,
+            'C07', 'C08', 'C09', 'C10', 'C11', 'C12', null, null, null, null, null,
+            'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', null, null, null, null,
+            null, 'C20', 'C21', 'C22', 'C23', 'C24', null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, 'C25', 'C26',
+            null, null, null, null, null, null, 'C27', 'C28', 'C29', 'C30', 'C31',
+            null, null, null, null, null, null, null, 'C32', 'C33', 'C34', 'C35'
+        ];
+
+        const seccionadores = ['DA1a', 'DA1b', 'DA2', 'DA3', 'DB1', 'DB2', 'DB3', 'DC1', 'DC2', 'DC3'];
+
+        // Estado simulado (Base de Datos)
+        const estadoEquipos = {
+            'B34': 'rojo',
+            'A05': 'verde',
+            'C12': 'azul',
+            'A10': 'negro',
+            'B02': 'amarillo'
+        };
+
+        function renderizarMapa(mapa, contenedorId) {
+            const contenedor = document.getElementById(contenedorId);
+            
+            mapa.forEach(equipo => {
+                if (equipo === null) {
+                    // Div transparente para mantener la forma (misma medida que el botón)
+                    const espacioVacio = document.createElement('div');
+                    espacioVacio.className = 'w-11 h-11 md:w-14 md:h-14'; 
+                    contenedor.appendChild(espacioVacio);
+                } else {
+                    const btn = document.createElement('button');
+                    // Busca el color en estadoEquipos, si no existe usa 'blanco'
+                    const colorClave = estadoEquipos[equipo] || 'blanco';
+                    const clasesColor = estilosEstados[colorClave];
+                    
+                    // Unimos las clases base con las de color
+                    btn.className = `${claseBaseBoton} ${clasesColor}`;
+                    btn.innerText = equipo;
+                    
+                    btn.ondblclick = () => {
+                        alert('Abriendo sistema para: ' + equipo);
+                    };
+
+                    contenedor.appendChild(btn);
+                }
+            });
+        }
+
+        // Inicialización
+        renderizarMapa(mapaA, 'sectorA');
+        renderizarMapa(mapaB, 'sectorB');
+        renderizarMapa(mapaC, 'sectorC');
+        renderizarMapa(seccionadores, 'seccionadores');
+        
+        // Activar Pestaña A por defecto
+        mostrarSector('sectorA');
+    </script>
+</body>
+</html>
